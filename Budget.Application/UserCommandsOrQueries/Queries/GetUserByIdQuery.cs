@@ -2,7 +2,7 @@
 using WebApiBudget.DomainOrCore.Entities;
 using WebApiBudget.DomainOrCore.Interfaces;
 
-namespace WebApiBudget.Application.Queries
+namespace WebApiBudget.Application.UserCommandsOrQueries.Queries
 {
     public class GetUserByIdQuery(Guid UserId) : IRequest<UsersEntity?>
     {

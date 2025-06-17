@@ -2,7 +2,7 @@
 using WebApiBudget.DomainOrCore.Entities;
 using WebApiBudget.DomainOrCore.Interfaces;
 
-namespace WebApiBudget.Application.Queries
+namespace WebApiBudget.Application.UserCommandsOrQueries.Queries
 {
     public class GetAllUsersQuery() : IRequest<IEnumerable<UsersEntity>>;
     public class GetAllUsersQueryHandler(IUsersRepository usersRepository) : IRequestHandler<GetAllUsersQuery, IEnumerable<UsersEntity>>
