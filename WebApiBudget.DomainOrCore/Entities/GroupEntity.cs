@@ -16,7 +16,7 @@ namespace WebApiBudget.DomainOrCore.Entities
         public string GroupName { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
-
+        [Required]
         public string GroupCode { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

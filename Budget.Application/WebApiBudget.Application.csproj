@@ -15,4 +15,8 @@
     <ProjectReference Include="..\WebApiBudget.DomainOrCore\WebApiBudget.DomainOrCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GroupCommandsOrQueries\Queries\" />
+  </ItemGroup>
+
 </Project>
