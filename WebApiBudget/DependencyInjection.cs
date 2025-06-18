@@ -4,6 +4,7 @@ using System.Text;
 using WebApiBudget.Application;
 using WebApiBudget.DomainOrCore.Models;
 using WebApiBudget.Infrastucture;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WebApiBudget
 {
@@ -19,8 +20,7 @@ namespace WebApiBudget
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
+            }).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -32,6 +32,13 @@ namespace WebApiBudget
                     ValidAudience = jwtSettings?.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? string.Empty))
+                };                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var tokenValidator = context.HttpContext.RequestServices.GetRequiredService<WebApiBudget.Infrastucture.Authentication.TokenValidatorService>();
+                        await tokenValidator.ValidateAsync(context);
+                    }
                 };
             });
             

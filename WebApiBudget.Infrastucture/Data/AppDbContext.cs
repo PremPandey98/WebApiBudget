@@ -7,6 +7,7 @@ namespace WebApiBudget.Infrastucture.Data
     {
         public DbSet<UsersEntity> Users { get; set; }
         public DbSet<GroupEntity> Groups { get; set; }
+        public DbSet<BlacklistedTokenEntity> BlacklistedTokens { get; set; }
 
     }
 }

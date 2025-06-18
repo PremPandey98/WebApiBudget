@@ -15,12 +15,13 @@ namespace WebApiBudget.Infrastucture
         {
             services.AddDbContext<Data.AppDbContext>(options =>
             {
-               options.UseSqlServer("Server=localhost;Database=BudgetDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true");
+               options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             }); 
-            
-            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+              services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IUsersRepository, UserRepository>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
+            services.AddSingleton<TokenValidatorService>();
             
             return services;
         }
