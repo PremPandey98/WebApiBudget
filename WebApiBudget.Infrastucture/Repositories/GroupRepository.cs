@@ -6,7 +6,8 @@ using WebApiBudget.Infrastucture.Data;
 namespace WebApiBudget.Infrastucture.Repositories
 {
     public class GroupRepository(AppDbContext DbContext) : IGroupRepository
-    {        public async Task<IEnumerable<GroupEntity>> GetAllGroupsAsync()
+    {        
+        public async Task<IEnumerable<GroupEntity>> GetAllGroupsAsync()
         {
             return await DbContext.Groups
                 .Include(g => g.Users)

@@ -127,5 +127,50 @@ namespace WebApiBudget.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
+        [HttpPatch("UpdateUserPartial/{userId}")]
+        [Authorize(Policy = "RequireUserRole")]
+        public async Task<IActionResult> UpdateUserPartial([FromRoute] Guid userId, [FromBody] UserUpdateDto updateDto)
+        {
+            try
+            {
+                // First get the existing user
+                var existingUser = await _sender.Send(new GetUserByIdQuery(userId));
+                if (existingUser == null)
+                {
+                    return NotFound("User not found");
+                }
+                
+                // Only update the fields that are provided
+                if (updateDto.Name != null) existingUser.Name = updateDto.Name;
+                if (updateDto.UserName != null) existingUser.UserName = updateDto.UserName;
+                if (updateDto.Email != null) existingUser.Email = updateDto.Email;
+                if (updateDto.Password != null) existingUser.Password = updateDto.Password;
+                if (updateDto.Phone != null) existingUser.Phone = updateDto.Phone;
+                if (updateDto.IsActive.HasValue) existingUser.IsActive = updateDto.IsActive.Value;
+                
+                // Handle groups separately if provided
+                if (updateDto.Groups != null && updateDto.Groups.Any())
+                {
+                    // Only modify the Groups property - leave other properties unchanged
+                    var groupIds = updateDto.Groups.Select(g => g.Id).ToList();
+                    var userRepository = HttpContext.RequestServices.GetRequiredService<IUsersRepository>();
+                    var updatedUser = await userRepository.UpdateUserGroupsAsync(userId, groupIds, false);
+                    return Ok(updatedUser.ToDto());
+                }
+                
+                // Submit the update if we haven't returned yet
+                var result = await _sender.Send(new UpdateUserCommand(userId, existingUser));
+                return Ok(result?.ToDto());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }
