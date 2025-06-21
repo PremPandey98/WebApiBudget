@@ -2,9 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 using WebApiBudget.Application.UserCommandsOrQueries.Commonds;
 using WebApiBudget.Application.UserCommandsOrQueries.Queries;
 using WebApiBudget.DomainOrCore.Entities;
+using WebApiBudget.DomainOrCore.Interfaces;
+using WebApiBudget.Helpers;
+using WebApiBudget.DomainOrCore.Models.DTOs;
 
 namespace WebApiBudget.Controllers
 {
@@ -29,7 +33,7 @@ namespace WebApiBudget.Controllers
                 return BadRequest("User cannot be null");
             }
             var result = await _sender.Send(new AddUserCommand(user));
-            return Ok(result);
+            return Ok(result?.ToDto());
         }
 
         [HttpGet("GetAllUsers")]
@@ -37,7 +41,7 @@ namespace WebApiBudget.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _sender.Send(new GetAllUsersQuery());
-            return Ok(users);
+            return Ok(users?.ToDtos());
         }
 
         [HttpGet("GetUser/{id}")]
@@ -49,11 +53,11 @@ namespace WebApiBudget.Controllers
             {
                 return NotFound();
             }
-            return Ok(user);
+            return Ok(user.ToDto());
         }
 
         [HttpPost("UpdateUser/{UserId}")]
-        [Authorize(Policy = "RequireAdminRole")] // Only admins can update users
+        [Authorize(Policy = "RequireUserRole")] // Only admins can update users
         public async Task<IActionResult> UpdateUser([FromRoute] Guid UserId, [FromBody] UsersEntity User)
         {
             if (User == null)
@@ -61,7 +65,7 @@ namespace WebApiBudget.Controllers
                 return BadRequest("User cannot be null");
             }
             var result = await _sender.Send(new UpdateUserCommand(UserId, User));
-            return Ok(result);
+            return Ok(result?.ToDto());
         }
 
         [HttpDelete("DeleteUser/{id}")]
@@ -91,7 +95,82 @@ namespace WebApiBudget.Controllers
             {
                 return NotFound();
             }
-            return Ok(user);
+            return Ok(user.ToDto());
+        }
+
+        [HttpPost("UpdateUserGroups/{userId}")]
+        [Authorize(Policy = "RequireUserRole")]
+        public async Task<IActionResult> UpdateUserGroups(Guid userId, [FromBody] UserGroupsUpdateDto groupsUpdateDto)
+        {
+            if (groupsUpdateDto == null || groupsUpdateDto.GroupIds == null)
+            {
+                return BadRequest("Group IDs must be provided");
+            }
+            
+            try
+            {
+                // Access the repository directly since we're adding a specialized method
+                var userRepository = HttpContext.RequestServices.GetRequiredService<IUsersRepository>();
+                var user = await userRepository.UpdateUserGroupsAsync(
+                    userId, 
+                    groupsUpdateDto.GroupIds, 
+                    groupsUpdateDto.ReplaceExisting);
+                    
+                return Ok(user.ToDto());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPatch("UpdateUserPartial/{userId}")]
+        [Authorize(Policy = "RequireUserRole")]
+        public async Task<IActionResult> UpdateUserPartial([FromRoute] Guid userId, [FromBody] UserUpdateDto updateDto)
+        {
+            try
+            {
+                // First get the existing user
+                var existingUser = await _sender.Send(new GetUserByIdQuery(userId));
+                if (existingUser == null)
+                {
+                    return NotFound("User not found");
+                }
+                
+                // Only update the fields that are provided
+                if (updateDto.Name != null) existingUser.Name = updateDto.Name;
+                if (updateDto.UserName != null) existingUser.UserName = updateDto.UserName;
+                if (updateDto.Email != null) existingUser.Email = updateDto.Email;
+                if (updateDto.Password != null) existingUser.Password = updateDto.Password;
+                if (updateDto.Phone != null) existingUser.Phone = updateDto.Phone;
+                if (updateDto.IsActive.HasValue) existingUser.IsActive = updateDto.IsActive.Value;
+                
+                // Handle groups separately if provided
+                if (updateDto.Groups != null && updateDto.Groups.Any())
+                {
+                    // Only modify the Groups property - leave other properties unchanged
+                    var groupIds = updateDto.Groups.Select(g => g.Id).ToList();
+                    var userRepository = HttpContext.RequestServices.GetRequiredService<IUsersRepository>();
+                    var updatedUser = await userRepository.UpdateUserGroupsAsync(userId, groupIds, false);
+                    return Ok(updatedUser.ToDto());
+                }
+                
+                // Submit the update if we haven't returned yet
+                var result = await _sender.Send(new UpdateUserCommand(userId, existingUser));
+                return Ok(result?.ToDto());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
     }
 }

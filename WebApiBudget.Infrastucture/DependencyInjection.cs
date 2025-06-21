@@ -22,7 +22,8 @@ namespace WebApiBudget.Infrastucture
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
             services.AddSingleton<TokenValidatorService>();
-            
+            services.AddScoped<IGroupRepository, GroupRepository>();
+
             return services;
         }
     }
