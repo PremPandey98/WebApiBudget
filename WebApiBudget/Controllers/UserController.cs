@@ -58,14 +58,14 @@ namespace WebApiBudget.Controllers
 
         [HttpPost("UpdateUser/{UserId}")]
         [Authorize(Policy = "RequireUserRole")] // Only admins can update users
-        public async Task<IActionResult> UpdateUser([FromRoute] Guid UserId, [FromBody] UsersEntity User)
+        public async Task<IActionResult> UpdateUser([FromRoute] Guid UserId, [FromBody] UserDto User)
         {
             if (User == null)
             {
                 return BadRequest("User cannot be null");
             }
             var result = await _sender.Send(new UpdateUserCommand(UserId, User));
-            return Ok(result?.ToDto());
+            return Ok(result);
         }
 
         [HttpDelete("DeleteUser/{id}")]
@@ -79,7 +79,7 @@ namespace WebApiBudget.Controllers
             }
             return Ok(result);
         }
-        
+
         [HttpGet("me")]
         [Authorize] // Any authenticated user can access their own profile
         public async Task<IActionResult> GetCurrentUser()
@@ -100,77 +100,20 @@ namespace WebApiBudget.Controllers
 
         [HttpPost("UpdateUserGroups/{userId}")]
         [Authorize(Policy = "RequireUserRole")]
-        public async Task<IActionResult> UpdateUserGroups(Guid userId, [FromBody] UserGroupsUpdateDto groupsUpdateDto)
+        public async Task<IActionResult> UpdateUserGroups(Guid userId, [FromBody] GroupDto groupDto)
         {
-            if (groupsUpdateDto == null || groupsUpdateDto.GroupIds == null)
+            if (userId == Guid.Empty)
             {
-                return BadRequest("Group IDs must be provided");
+                return BadRequest("User ID must be provided");
             }
-            
-            try
+            if (groupDto.GroupCode == null && groupDto.Password == null)
             {
-                // Access the repository directly since we're adding a specialized method
-                var userRepository = HttpContext.RequestServices.GetRequiredService<IUsersRepository>();
-                var user = await userRepository.UpdateUserGroupsAsync(
-                    userId, 
-                    groupsUpdateDto.GroupIds, 
-                    groupsUpdateDto.ReplaceExisting);
-                    
-                return Ok(user.ToDto());
+                return BadRequest("Group code and password must be Requried");
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
+            var user = await _sender.Send(new UserGroupUpdateCommand(userId, groupDto));
+
+            return Ok(user.ToDto());
         }
 
-        [HttpPatch("UpdateUserPartial/{userId}")]
-        [Authorize(Policy = "RequireUserRole")]
-        public async Task<IActionResult> UpdateUserPartial([FromRoute] Guid userId, [FromBody] UserUpdateDto updateDto)
-        {
-            try
-            {
-                // First get the existing user
-                var existingUser = await _sender.Send(new GetUserByIdQuery(userId));
-                if (existingUser == null)
-                {
-                    return NotFound("User not found");
-                }
-                
-                // Only update the fields that are provided
-                if (updateDto.Name != null) existingUser.Name = updateDto.Name;
-                if (updateDto.UserName != null) existingUser.UserName = updateDto.UserName;
-                if (updateDto.Email != null) existingUser.Email = updateDto.Email;
-                if (updateDto.Password != null) existingUser.Password = updateDto.Password;
-                if (updateDto.Phone != null) existingUser.Phone = updateDto.Phone;
-                if (updateDto.IsActive.HasValue) existingUser.IsActive = updateDto.IsActive.Value;
-                
-                // Handle groups separately if provided
-                if (updateDto.Groups != null && updateDto.Groups.Any())
-                {
-                    // Only modify the Groups property - leave other properties unchanged
-                    var groupIds = updateDto.Groups.Select(g => g.Id).ToList();
-                    var userRepository = HttpContext.RequestServices.GetRequiredService<IUsersRepository>();
-                    var updatedUser = await userRepository.UpdateUserGroupsAsync(userId, groupIds, false);
-                    return Ok(updatedUser.ToDto());
-                }
-                
-                // Submit the update if we haven't returned yet
-                var result = await _sender.Send(new UpdateUserCommand(userId, existingUser));
-                return Ok(result?.ToDto());
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
     }
 }

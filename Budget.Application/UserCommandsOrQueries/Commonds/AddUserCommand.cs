@@ -14,7 +14,12 @@ namespace WebApiBudget.Application.UserCommandsOrQueries.Commonds
             {
                 throw new ArgumentNullException(nameof(request.User), "User cannot be null");
             }
-            // Validate the user entity here if needed
+            Validators.AddUserCommandValidator validator = new(usersRepository);
+           
+            if (!await validator.ValidateAsync(request.User))
+            {
+                throw new ArgumentException("User validation failed");
+            }
             return await usersRepository.AddUsersAsync(request.User);
         }
     }

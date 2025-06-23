@@ -16,7 +16,7 @@ namespace WebApiBudget.Application.GroupCommandsOrQueries.Queries
             {
                 throw new ArgumentException("Group ID cannot be empty", nameof(request.GroupId));
             }
-            return await groupRepository.GetGroupByIdAsync(request.GroupId);
+            return await groupRepository.GetGroupByIdOrGroupCodeAsync(request.GroupId ,null);
         }
     }
 }

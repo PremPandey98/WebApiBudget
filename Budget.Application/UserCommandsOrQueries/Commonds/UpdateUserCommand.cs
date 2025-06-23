@@ -1,15 +1,11 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WebApiBudget.DomainOrCore.Entities;
 using WebApiBudget.DomainOrCore.Interfaces;
+using WebApiBudget.DomainOrCore.Models.DTOs;
 
 namespace WebApiBudget.Application.UserCommandsOrQueries.Commonds
 {
-    public record UpdateUserCommand(Guid UserId, UsersEntity User) : IRequest<UsersEntity>;
+    public record UpdateUserCommand(Guid UserId, UserDto User) : IRequest<UsersEntity>;
     
     public class UpdateUserCommandHandler(IUsersRepository usersRepository) : IRequestHandler<UpdateUserCommand, UsersEntity>
     {
