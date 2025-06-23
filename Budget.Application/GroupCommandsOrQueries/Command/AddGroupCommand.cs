@@ -14,7 +14,12 @@ namespace WebApiBudget.Application.GroupCommandsOrQueries.Command
             {
                 throw new ArgumentNullException(nameof(request.User), "Group cannot be null");
             }
-            // Validate the group entity here if needed
+            Validators.AddGroupCommandValidator validator = new(groupRepository);
+            
+            if (!await validator.ValidateAsync(request.User))
+            {
+                throw new ArgumentException("Group validation failed");
+            }
             return await groupRepository.AddGroupAsync(request.User);
         }
     }

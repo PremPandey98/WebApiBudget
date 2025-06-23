@@ -1,15 +1,15 @@
 ﻿using WebApiBudget.DomainOrCore.Entities;
+using WebApiBudget.DomainOrCore.Models.DTOs;
 
 namespace WebApiBudget.DomainOrCore.Interfaces
 {
     public interface IUsersRepository
     {
         Task<IEnumerable<UsersEntity>> GetAllUsersAsync();
-        Task<UsersEntity?> GetUsersByIdAsync(Guid userId);
+        Task<UsersEntity?> GetUserByIdOrUserNameAsync(Guid? userId,string? usreName);
         Task<UsersEntity> AddUsersAsync(UsersEntity User);
-        Task<UsersEntity> UpdateUsersAsync(Guid userId, UsersEntity User);
+        Task<UsersEntity> UpdateUsersAsync(Guid userId, UserDto User);
         Task<bool> DeleteUsersByIdAsync(Guid userId);
-        Task<UsersEntity?> GetUserByIdAsync(Guid userId);
-        Task<UsersEntity> UpdateUserGroupsAsync(Guid userId, List<Guid> groupIds, bool replaceExisting = false);
+        Task<UsersEntity> UpdateUserGroupsAsync(Guid userId, GroupEntity groupDto);
     }
 }

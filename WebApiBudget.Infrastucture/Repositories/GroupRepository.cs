@@ -13,11 +13,9 @@ namespace WebApiBudget.Infrastucture.Repositories
                 .Include(g => g.Users)
                 .ToListAsync();
         }
-        public async Task<GroupEntity?> GetGroupByIdAsync(Guid groupId)
+        public async Task<GroupEntity?> GetGroupByIdOrGroupCodeAsync(Guid? groupId, string? GroupCode)
         {
-            return await DbContext.Groups
-                .Include(g => g.Users)
-                .FirstOrDefaultAsync(x => x.Id == groupId);
+            return await DbContext.Groups.FirstOrDefaultAsync(x => (groupId != null && x.Id == groupId) || (!string.IsNullOrEmpty(GroupCode) && x.GroupCode == GroupCode));
         }
         public async Task<GroupEntity> AddGroupAsync(GroupEntity group)
         {

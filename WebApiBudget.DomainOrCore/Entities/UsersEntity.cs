@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WebApiBudget.DomainOrCore.Models.DTOs;
 
 namespace WebApiBudget.DomainOrCore.Entities
 {

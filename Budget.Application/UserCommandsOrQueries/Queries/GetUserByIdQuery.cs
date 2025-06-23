@@ -16,7 +16,7 @@ namespace WebApiBudget.Application.UserCommandsOrQueries.Queries
             {
                 throw new ArgumentException("User ID cannot be empty", nameof(request.UserId));
             }
-            return await usersRepository.GetUserByIdAsync(request.UserId);
+            return await usersRepository.GetUserByIdOrUserNameAsync(request.UserId ,null);
         }
     }
 

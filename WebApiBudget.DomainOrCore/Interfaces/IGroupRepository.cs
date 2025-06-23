@@ -10,7 +10,7 @@ namespace WebApiBudget.DomainOrCore.Interfaces
     public interface IGroupRepository
     {
         Task<IEnumerable<GroupEntity>> GetAllGroupsAsync();
-        Task<GroupEntity?> GetGroupByIdAsync(Guid groupId);
+        Task<GroupEntity?> GetGroupByIdOrGroupCodeAsync(Guid? groupId,string? GroupCode);
         Task<GroupEntity> AddGroupAsync(GroupEntity group);
         Task<GroupEntity> UpdateGroupAsync(Guid groupId, GroupEntity group);
         Task<bool> DeleteGroupByIdAsync(Guid groupId);

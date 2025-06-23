@@ -24,5 +24,6 @@ namespace WebApiBudget.DomainOrCore.Entities
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
         public List<UsersEntity> Users { get; set; } = new List<UsersEntity>();
+        public string Password { get; set; } = string.Empty;
     }
 }
