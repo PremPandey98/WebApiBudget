@@ -49,7 +49,7 @@ namespace WebApiBudget.Application.UserCommandsOrQueries.Validators
             var existingUser = await usersRepository.GetUserByIdOrUserNameAsync(null, username);
             if (existingUser != null)
             {
-                throw new ArgumentException("Username already exists");
+                throw new ArgumentException("Username already Used");
             }
         }
         

@@ -21,6 +21,7 @@ namespace WebApiBudget.Application.Authentication.Commands
             return new AuthResponse
             {
                 UserId = user.UserId,
+                Name = user.Name,
                 UserName = user.UserName,
                 Email = user.Email,
                 Token = token
