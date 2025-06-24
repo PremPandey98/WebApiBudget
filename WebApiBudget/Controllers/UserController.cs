@@ -9,6 +9,7 @@ using WebApiBudget.DomainOrCore.Entities;
 using WebApiBudget.DomainOrCore.Interfaces;
 using WebApiBudget.Helpers;
 using WebApiBudget.DomainOrCore.Models.DTOs;
+using WebApiBudget.Budget.Application.UserCommandsOrQueries.Commonds;
 
 namespace WebApiBudget.Controllers
 {
@@ -112,6 +113,16 @@ namespace WebApiBudget.Controllers
             }
             var user = await _sender.Send(new UserGroupUpdateCommand(userId, groupDto));
 
+            return Ok(user.ToDto());
+        }
+
+        [HttpPost("RemoveUserGroup/{userId}/{groupId}")]
+        [Authorize(Policy = "RequireUserRole")]
+        public async Task<IActionResult> RemoveUserGroup(Guid userId, Guid groupId)
+        {
+            if (userId == Guid.Empty || groupId == Guid.Empty)
+                return BadRequest("User ID and Group ID must be provided");
+            var user = await _sender.Send(new RemoveUserGroupCommand(userId, groupId));
             return Ok(user.ToDto());
         }
 

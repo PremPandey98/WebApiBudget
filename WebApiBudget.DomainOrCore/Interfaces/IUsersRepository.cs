@@ -11,5 +11,6 @@ namespace WebApiBudget.DomainOrCore.Interfaces
         Task<UsersEntity> UpdateUsersAsync(Guid userId, UserDto User);
         Task<bool> DeleteUsersByIdAsync(Guid userId);
         Task<UsersEntity> UpdateUserGroupsAsync(Guid userId, GroupEntity groupDto);
+        Task<UsersEntity> RemoveUserGroupAsync(Guid userId, Guid groupId);
     }
 }

@@ -10,9 +10,7 @@ namespace WebApiBudget.Infrastucture.Repositories
     {
         public async Task<IEnumerable<UsersEntity>> GetAllUsersAsync()
         {
-            return await DbContext.Users
-                .Include(u => u.Groups)
-                .ToListAsync();
+            return await DbContext.Users.Include(u => u.Groups).ToListAsync();
         }
 
         public async Task<UsersEntity?> GetUserByIdOrUserNameAsync(Guid? userId, string? userName)
@@ -21,7 +19,8 @@ namespace WebApiBudget.Infrastucture.Repositories
             {
                 throw new ArgumentException("Either userId or userName must be provided");
             }
-            return await DbContext.Users.FirstOrDefaultAsync(x => (userId != null && x.UserId == userId) || (!string.IsNullOrEmpty(userName) && x.UserName == userName));
+            return await DbContext.Users.Include(u => u.Groups.Where(g => g.IsActive)).
+                FirstOrDefaultAsync(x => (userId != null && x.UserId == userId) || (!string.IsNullOrEmpty(userName) && x.UserName == userName));
         }
         public async Task<UsersEntity> AddUsersAsync(UsersEntity User)
         {
@@ -68,16 +67,6 @@ namespace WebApiBudget.Infrastucture.Repositories
             return await DbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<UsersEntity?> GetUserByIdAsync(Guid userId)
-        {
-            var user = await DbContext.Users.FirstOrDefaultAsync(x => x.UserId == userId);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
-            return user;
-        }
-
         public async Task<UsersEntity> UpdateUserGroupsAsync(Guid userId, GroupEntity group)
         {
             var userToUpdate = await DbContext.Users.Include(u => u.Groups).FirstOrDefaultAsync(x => x.UserId == userId);
@@ -96,6 +85,19 @@ namespace WebApiBudget.Infrastucture.Repositories
             DbContext.Users.Update(userToUpdate);
             await DbContext.SaveChangesAsync();
             return userToUpdate;
+        }
+        public async Task<UsersEntity> RemoveUserGroupAsync(Guid userId, Guid groupId)
+        {
+            var user = await DbContext.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+                throw new KeyNotFoundException("User not found");
+            var group = user.Groups.FirstOrDefault(g => g.Id == groupId);
+            if (group == null)
+                throw new KeyNotFoundException("Group not found for this user");
+            user.Groups.Remove(group);
+            DbContext.Users.Update(user);
+            await DbContext.SaveChangesAsync();
+            return user;
         }
     }
 }
