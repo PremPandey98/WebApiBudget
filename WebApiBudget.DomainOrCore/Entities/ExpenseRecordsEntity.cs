@@ -32,6 +32,10 @@ namespace WebApiBudget.DomainOrCore.Entities
 
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
+
+        [ForeignKey("ExpenseCategoryID")]
+        public int ExpenseCategoryID { get; set; } = 15; // Default to Miscellaneous
+        public ExpenseCategoryEntity? ExpenseCategory { get; set; }
     }
 
 }

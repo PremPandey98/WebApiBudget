@@ -24,6 +24,7 @@ namespace WebApiBudget.Infrastucture
             services.AddSingleton<TokenValidatorService>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IExpenseRecordsRepository, ExpenseRecordsRepository>();
+            services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
 
             return services;
         }
