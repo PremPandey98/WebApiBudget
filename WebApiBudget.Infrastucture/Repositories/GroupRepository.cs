@@ -19,6 +19,7 @@ namespace WebApiBudget.Infrastucture.Repositories
         }
         public async Task<GroupEntity> AddGroupAsync(GroupEntity group)
         {
+            group.CreatedAt = DateTime.UtcNow;
             group.Id = Guid.NewGuid();
             DbContext.Groups.Add(group);
             await DbContext.SaveChangesAsync();
@@ -46,6 +47,7 @@ namespace WebApiBudget.Infrastucture.Repositories
             {
                 throw new KeyNotFoundException("Group not found");
             }
+            groupToDelete.UpdatedAt = DateTime.UtcNow;
             groupToDelete.IsActive = false;
             DbContext.Groups.Update(groupToDelete);
             return await DbContext.SaveChangesAsync() > 0;

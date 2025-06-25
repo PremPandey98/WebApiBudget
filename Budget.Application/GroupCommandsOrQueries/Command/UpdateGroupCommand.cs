@@ -9,7 +9,12 @@ namespace WebApiBudget.Application.GroupCommandsOrQueries.Command
     {
         public async Task<GroupEntity> Handle(UpdateGroupCommand request, CancellationToken cancellationToken)
         {
-            // Validate the group entity here if needed
+            Validators.AddGroupCommandValidator validator = new(groupRepository);
+
+            if (!await validator.ValidateAsync(request.Group))
+            {
+                throw new ArgumentException("Group validation failed");
+            }
             return await groupRepository.UpdateGroupAsync(request.GroupId, request.Group);
         }
     }

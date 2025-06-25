@@ -23,6 +23,7 @@ namespace WebApiBudget.Infrastucture
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
             services.AddSingleton<TokenValidatorService>();
             services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<IExpenseRecordsRepository, ExpenseRecordsRepository>();
 
             return services;
         }
