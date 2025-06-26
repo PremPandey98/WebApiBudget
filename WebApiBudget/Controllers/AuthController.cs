@@ -1,9 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using WebApiBudget.Application.Authentication.Commands;
 using WebApiBudget.Application.Authentication.Models;
 
@@ -61,6 +59,21 @@ namespace WebApiBudget.Controllers
             {
                 return StatusCode(500, new LogoutResponse { Success = false, Message = $"Error during logout: {ex.Message}" });
             }
+        }
+
+        [HttpPost("switchTogroup/{groupId}")]
+        [Authorize]
+        public async Task<IActionResult> SwitchGroup(Guid groupId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
+                return Unauthorized();
+
+            var response = await _mediator.Send(new SwitchToGroupCommand(parsedUserId, groupId));
+            if (response == null)
+                return Unauthorized("Invalid Group ID or Someting went wrong");
+
+            return Ok(response);
         }
     }
 }

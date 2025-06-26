@@ -46,7 +46,7 @@ namespace WebApiBudget.Infrastucture.Authentication
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
+   
         public async Task<UsersEntity?> ValidateUserAsync(string username, string password)
         {
             var user = await _context.Users
@@ -56,6 +56,52 @@ namespace WebApiBudget.Infrastucture.Authentication
                 return user;
 
             return null;
+        }
+
+        public async Task<GroupEntity?> GetGroupAsync(Guid GroupID)
+        {
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == GroupID && g.IsActive);
+            if (group == null || !group.IsActive)
+                return null;
+
+            return group;
+        }
+
+        public async Task<UsersEntity?> GetUserAsync(Guid UserID)
+        {
+            var User = await _context.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.UserId == UserID && u.IsActive);
+            if (User == null || !User.IsActive)
+                return null;
+
+            return User;
+        }
+
+        async public Task<string> GenerateTokenForGroupAsync(UsersEntity user, GroupEntity group)
+        {
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, ((UserRole)user.Role).ToString()),
+                new Claim("GroupId", group.Id.ToString()), 
+                new Claim("SwitchToGroup", true.ToString()) 
+            };
+
+
+            var tokenExpiration = DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: tokenExpiration,
+                signingCredentials: signingCredentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
