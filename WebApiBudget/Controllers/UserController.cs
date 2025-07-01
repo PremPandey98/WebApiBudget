@@ -46,7 +46,7 @@ namespace WebApiBudget.Controllers
         }
 
         [HttpGet("GetUser/{id}")]
-        [Authorize(Policy = "RequireUserRole")] // Both users and admins can see user details
+        [Authorize(Policy = "RequireAdminRole")]  //Admins can see user details
         public async Task<IActionResult> GetUserById(Guid id)
         {
             var user = await _sender.Send(new GetUserByIdQuery(id));
@@ -99,19 +99,20 @@ namespace WebApiBudget.Controllers
             return Ok(user.ToDto());
         }
 
-        [HttpPost("UpdateUserGroups/{userId}")]
+        [HttpPost("UpdateUserGroups")]
         [Authorize(Policy = "RequireUserRole")]
-        public async Task<IActionResult> UpdateUserGroups(Guid userId, [FromBody] GroupDto groupDto)
+        public async Task<IActionResult> UpdateUserGroups([FromBody] GroupDto groupDto)
         {
-            if (userId == Guid.Empty)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
             {
-                return BadRequest("User ID must be provided");
+                return Unauthorized();
             }
             if (groupDto.GroupCode == null && groupDto.Password == null)
             {
                 return BadRequest("Group code and password must be Requried");
             }
-            var user = await _sender.Send(new UserGroupUpdateCommand(userId, groupDto));
+            var user = await _sender.Send(new UserGroupUpdateCommand(parsedUserId, groupDto));
 
             return Ok(user.ToDto());
         }
