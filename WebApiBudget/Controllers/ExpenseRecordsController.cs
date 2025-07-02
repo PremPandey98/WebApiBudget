@@ -45,13 +45,30 @@ namespace WebApiBudget.Controllers
 
             if (!string.IsNullOrEmpty(expenseRecord.Description) && expenseRecord.Description.Length > 500)
                 return BadRequest("Description max length is 500.");
+            
+            if (!string.IsNullOrEmpty(expenseRecord.Tittle) && expenseRecord.Tittle.Length > 500)
+                return BadRequest("Tittle max length is 500.");
+
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
             {
                 return Unauthorized();
             }
+
+            var isGroupRelated = User.FindFirst("SwitchToGroup")?.Value;
+            if (bool.TryParse(isGroupRelated, out var isGroupRelatedBool) && isGroupRelatedBool)
+            {
+                var groupId = User.FindFirst("GroupId")?.Value;
+
+                if (!string.IsNullOrEmpty(groupId) && Guid.TryParse(groupId, out var groupGuid))
+                {
+                    expenseRecord.IsGroupRelated = true;
+                    expenseRecord.GroupId = groupGuid;
+                }
+
+            }
+
             expenseRecord.AddedByUserId = parsedUserId;
             var result = await _mediator.Send(new CreateExpenseRecordCommand(expenseRecord));
             return Ok(result);

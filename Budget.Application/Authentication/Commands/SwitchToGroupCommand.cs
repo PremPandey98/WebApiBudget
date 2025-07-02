@@ -19,7 +19,7 @@ namespace WebApiBudget.Application.Authentication.Commands
                 return null;
             if(user.Groups.Contains(Group))
             {
-                var token = await authService.GenerateTokenAsync(user);
+                var token = await authService.GenerateTokenForGroupAsync(user, Group);
 
                 return new AuthResponse
                 {

@@ -15,6 +15,8 @@ namespace WebApiBudget.DomainOrCore.Entities
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        [MaxLength(500)]
+        public string? Tittle { get; set; }
         public Guid? AddedByUserId { get; set; }
 
         [ForeignKey("AddedByUserId")]
