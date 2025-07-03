@@ -7,6 +7,7 @@ using WebApiBudget.Application.ExpenseRecordsCommandsOrQueries.Queries;
 using Microsoft.AspNetCore.Authorization;
 using WebApiBudget.DomainOrCore.Entities;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace WebApiBudget.Controllers
 {
@@ -27,6 +28,32 @@ namespace WebApiBudget.Controllers
             var result = await _mediator.Send(new GetAllExpenseRecordsQuery());
             return Ok(result);
         }
+
+        [HttpGet("GetAllRelatedExpenseRecord")]
+        public async Task<IActionResult> GetAllRelated()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
+            {
+                return Unauthorized();
+            }
+
+            var isGroupRelated = User.FindFirst("SwitchToGroup")?.Value;
+            Guid? groupId = null;
+
+            if (bool.TryParse(isGroupRelated, out var isGroupRelatedBool) && isGroupRelatedBool)
+            {
+                var groupIdClaim = User.FindFirst("GroupId")?.Value;
+                if (!string.IsNullOrEmpty(groupIdClaim) && Guid.TryParse(groupIdClaim, out var groupGuid))
+                {
+                    groupId = groupGuid;
+                }
+            }
+
+            var result = await _mediator.Send(new GetAllRelatedExpenseRecordsQuery(parsedUserId, groupId));
+            return Ok(result);
+        }
+
 
         [HttpGet("GetExpenseRecord/{id}")]
         public async Task<IActionResult> GetById(int id)

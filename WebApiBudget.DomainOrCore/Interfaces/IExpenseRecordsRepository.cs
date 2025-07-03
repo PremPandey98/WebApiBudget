@@ -10,6 +10,7 @@ namespace WebApiBudget.DomainOrCore.Interfaces
         Task<ExpenseRecordsEntity> UpdateExpenseRecordAsync(int expenseId ,ExpenseRecordsEntity entity);
         Task<ExpenseRecordsEntity> GetExpenseRecordByIdAsync(int expenseId);
         Task<IEnumerable<ExpenseRecordsEntity>> GetAllExpenseRecordAsync();
+        Task<IEnumerable<ExpenseRecordsEntity>> GetAllRelatedExpenseRecordsAsync(Guid user, Guid? group);
         Task<bool> DeleteExpenseRecordByIdAsync(int expenseId);
     }
 }

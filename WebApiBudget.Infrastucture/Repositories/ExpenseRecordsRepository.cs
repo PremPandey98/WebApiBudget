@@ -66,5 +66,21 @@ namespace WebApiBudget.Infrastucture.Repositories
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
+
+        public async Task<IEnumerable<ExpenseRecordsEntity>> GetAllRelatedExpenseRecordsAsync(Guid user, Guid? group)
+        {
+            if (!group.HasValue || group.Value == Guid.Empty)
+            {
+                return await _context.ExpenseRecords
+                    .Where(x => x.AddedByUserId == user && x.IsGroupRelated == false && x.IsDeleted == false)
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.ExpenseRecords
+                    .Where(x => x.IsGroupRelated == true && x.GroupId == group.Value && x.IsDeleted == false)
+                    .ToListAsync();
+            }
+        }
     }
 }
