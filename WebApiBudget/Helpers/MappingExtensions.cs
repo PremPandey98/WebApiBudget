@@ -39,6 +39,7 @@ namespace WebApiBudget.Helpers
                 GroupName = entity.GroupName,
                 GroupCode = entity.GroupCode,
                 Description = entity.Description,
+                Password = entity.Password,
                 IsActive = entity.IsActive,
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt

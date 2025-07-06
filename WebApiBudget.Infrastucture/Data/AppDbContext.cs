@@ -10,6 +10,7 @@ namespace WebApiBudget.Infrastucture.Data
         public DbSet<BlacklistedTokenEntity> BlacklistedTokens { get; set; }
         public DbSet<ExpenseRecordsEntity> ExpenseRecords { get; set; }
         public DbSet<ExpenseCategoryEntity> ExpenseCategories { get; set; }
+        public DbSet<DepositEntity> Deposits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

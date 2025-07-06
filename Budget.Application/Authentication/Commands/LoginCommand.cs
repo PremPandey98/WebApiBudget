@@ -24,6 +24,7 @@ namespace WebApiBudget.Application.Authentication.Commands
                 Name = user.Name,
                 UserName = user.UserName,
                 Email = user.Email,
+                Phone = user.Phone,
                 Token = token
             };
         }

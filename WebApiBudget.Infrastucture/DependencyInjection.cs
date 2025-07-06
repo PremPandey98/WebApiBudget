@@ -25,6 +25,7 @@ namespace WebApiBudget.Infrastucture
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IExpenseRecordsRepository, ExpenseRecordsRepository>();
             services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
+            services.AddScoped<IDepositRepository, DepositRepository>();
 
             return services;
         }
