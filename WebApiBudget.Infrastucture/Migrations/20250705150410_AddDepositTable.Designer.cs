@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApiBudget.Infrastucture.Data;
 
@@ -11,9 +12,11 @@ using WebApiBudget.Infrastucture.Data;
 namespace WebApiBudget.Infrastucture.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250705150410_AddDepositTable")]
+    partial class AddDepositTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -293,40 +296,6 @@ namespace WebApiBudget.Infrastucture.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("WebApiBudget.DomainOrCore.Entities.OtpEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OtpCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UsedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Otps");
-                });
-
             modelBuilder.Entity("WebApiBudget.DomainOrCore.Entities.UsersEntity", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -340,16 +309,7 @@ namespace WebApiBudget.Infrastucture.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EmailVerificationToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("EmailVerificationTokenExpiry")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEmailVerified")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -359,12 +319,6 @@ namespace WebApiBudget.Infrastucture.Migrations
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordResetToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("PasswordResetTokenExpiry")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Phone")
                         .IsRequired()

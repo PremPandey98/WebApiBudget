@@ -1,4 +1,5 @@
 using WebApiBudget;
+using WebApiBudget.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,23 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
         options.JsonSerializerOptions.MaxDepth = 32;
     });
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()  // For development only
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// Add HttpClient for keep-alive service
+builder.Services.AddHttpClient();
+
+// Register the keep-alive background service
+builder.Services.AddHostedService<KeepAliveService>();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddAppDI(builder.Configuration);
@@ -21,7 +39,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+app.UseCors();
+//app.UseHttpsRedirection();
 
 // Add these lines for authentication
 app.UseAuthentication();

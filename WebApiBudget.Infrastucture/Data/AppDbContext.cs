@@ -11,6 +11,7 @@ namespace WebApiBudget.Infrastucture.Data
         public DbSet<ExpenseRecordsEntity> ExpenseRecords { get; set; }
         public DbSet<ExpenseCategoryEntity> ExpenseCategories { get; set; }
         public DbSet<DepositEntity> Deposits { get; set; }
+        // Removed OtpEntity since we're using cache-based approach
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

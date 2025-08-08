@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using WebApiBudget.DomainOrCore.Entities;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using WebApiBudget.Infrastucture.Services;
 
 namespace WebApiBudget.Controllers
 {
@@ -17,9 +18,12 @@ namespace WebApiBudget.Controllers
     public class ExpenseRecordsController : ControllerBase
     {
         private readonly IMediator _mediator;
-        public ExpenseRecordsController(IMediator mediator)
+        private readonly UsageTrackingService _usageTrackingService;
+        
+        public ExpenseRecordsController(IMediator mediator, UsageTrackingService usageTrackingService)
         {
             _mediator = mediator;
+            _usageTrackingService = usageTrackingService;
         }
 
         [HttpGet("GetAllExpenseRecord")]
@@ -54,11 +58,10 @@ namespace WebApiBudget.Controllers
             return Ok(result);
         }
 
-
         [HttpGet("GetExpenseRecord/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var result = await _mediator.Send( new GetExpenseRecordByIdQuery(id));
+            var result = await _mediator.Send(new GetExpenseRecordByIdQuery(id));
             if (result == null) return NotFound();
             return Ok(result);
         }
@@ -98,6 +101,29 @@ namespace WebApiBudget.Controllers
 
             expenseRecord.AddedByUserId = parsedUserId;
             var result = await _mediator.Send(new CreateExpenseRecordCommand(expenseRecord));
+            
+            // Send notification if it's a group expense
+            if (expenseRecord.IsGroupRelated && expenseRecord.GroupId.HasValue)
+            {
+                var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Someone";
+                var title = "New Group Expense";
+                var body = $"{userName} added a new expense: ${expenseRecord.Amount:F2} for {expenseRecord.Tittle ?? "Expense"}";
+                
+            }
+            
+            // Check individual user's high usage
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _usageTrackingService.CheckHighUsageAsync(parsedUserId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Usage tracking failed: {ex.Message}");
+                }
+            });
+            
             return Ok(result);
         }
 
@@ -118,8 +144,7 @@ namespace WebApiBudget.Controllers
         [HttpDelete("DeleteExpenseRecord/{id}")]
         public async Task<IActionResult> DeleteExpenseRecord(int id)
         {
-            var result = await _mediator.Send(new DeleteExpenseRecordCommand( id ));
-          
+            var result = await _mediator.Send(new DeleteExpenseRecordCommand(id));
             return Ok(result);
         }
     }

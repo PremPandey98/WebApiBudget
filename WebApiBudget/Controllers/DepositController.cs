@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using WebApiBudget.DomainOrCore.Entities;
 using System.Security.Claims;
+using WebApiBudget.Infrastucture.Services;
 
 namespace WebApiBudget.Controllers
 {
@@ -15,6 +16,7 @@ namespace WebApiBudget.Controllers
     public class DepositController : ControllerBase
     {
         private readonly IMediator _mediator;
+
         public DepositController(IMediator mediator)
         {
             _mediator = mediator;
@@ -92,6 +94,16 @@ namespace WebApiBudget.Controllers
 
             deposit.AddedByUserId = parsedUserId;
             var result = await _mediator.Send(new CreateDepositCommand(deposit));
+            
+            // Send notification if it's a group deposit
+            if (deposit.IsGroupRelated && deposit.GroupId.HasValue)
+            {
+                var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Someone";
+                var title = "New Group Deposit";
+                var body = $"{userName} added a new deposit: ${deposit.Amount:F2} for {deposit.Tittle ?? "Deposit"}";
+                
+            }
+            
             return Ok(result);
         }
 

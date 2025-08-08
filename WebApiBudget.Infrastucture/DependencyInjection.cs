@@ -6,6 +6,7 @@ using WebApiBudget.DomainOrCore.Interfaces;
 using WebApiBudget.DomainOrCore.Models;
 using WebApiBudget.Infrastucture.Authentication;
 using WebApiBudget.Infrastucture.Repositories;
+using WebApiBudget.Infrastucture.Services;
 
 namespace WebApiBudget.Infrastucture
 {
@@ -15,9 +16,20 @@ namespace WebApiBudget.Infrastucture
         {
             services.AddDbContext<Data.AppDbContext>(options =>
             {
-               options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+               options.UseSqlServer(
+                   configuration.GetConnectionString("DefaultConnection"),
+                   sqlOptions => sqlOptions.EnableRetryOnFailure()
+               );
             }); 
-              services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+            
+            // Add Memory Cache for OTP storage
+            services.AddMemoryCache();
+            
+            // Register MediatR for Infrastructure handlers only (Application already registers for commands)
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+            
             services.AddScoped<IUsersRepository, UserRepository>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
@@ -26,6 +38,10 @@ namespace WebApiBudget.Infrastucture
             services.AddScoped<IExpenseRecordsRepository, ExpenseRecordsRepository>();
             services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
             services.AddScoped<IDepositRepository, DepositRepository>();
+            
+            // Email and OTP services (using cache-based OTP service, no database repository needed)
+            services.AddScoped<IOtpService, CacheBasedOtpService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }

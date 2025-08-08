@@ -27,6 +27,15 @@ namespace WebApiBudget.DomainOrCore.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+        
+        // Removed email verification fields for now since we're using cache-based approach
+        // You can add these back later when you apply the migration:
+        // public bool IsEmailVerified { get; set; } = false;
+        // public string? EmailVerificationToken { get; set; }
+        // public DateTime? EmailVerificationTokenExpiry { get; set; }
+        // public string? PasswordResetToken { get; set; }
+        // public DateTime? PasswordResetTokenExpiry { get; set; }
+        
         public List<GroupEntity> Groups { get; set; } = new List<GroupEntity>();
     }
     public enum UserRole
