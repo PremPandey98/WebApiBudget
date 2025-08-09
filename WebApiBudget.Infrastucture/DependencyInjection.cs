@@ -42,6 +42,9 @@ namespace WebApiBudget.Infrastucture
             // Email and OTP services (using cache-based OTP service, no database repository needed)
             services.AddScoped<IOtpService, CacheBasedOtpService>();
             services.AddScoped<IEmailService, EmailService>();
+            
+            // Usage tracking service
+            services.AddScoped<UsageTrackingService>();
 
             return services;
         }

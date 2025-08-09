@@ -103,14 +103,18 @@ namespace WebApiBudget.Infrastucture.Handlers
                     return false;
                 }
 
-                // Just verify that user exists (we'll track verification in cache or separate system)
+                // Check if user exists - but allow verification for non-existing users (for registration flow)
                 var userExists = await _context.Users
                     .AnyAsync(u => u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
                 
                 if (!userExists) 
                 {
-                    _logger.LogWarning("User with email {Email} not found during verification", request.Email);
-                    return false;
+                    _logger.LogInformation("User with email {Email} not found but allowing verification for registration purposes", request.Email);
+                    // Don't return false here - allow verification for non-existing users (useful for registration flow)
+                }
+                else
+                {
+                    _logger.LogInformation("User with email {Email} found during verification", request.Email);
                 }
 
                 _logger.LogInformation("Email verification successful for {Email}", request.Email);
