@@ -63,6 +63,28 @@ namespace WebApiBudget.Controllers
             return Ok(group.Users != null ? group.Users.ToDtos() : new List<UserDto>());
         }
 
+        [HttpGet("GetGroupUserCount/{groupId}")]
+        public async Task<IActionResult> GetGroupUserCount(Guid groupId)
+        {
+            try
+            {
+                var userCount = await _sender.Send(new GetGroupUserCountQuery(groupId));
+                return Ok(new { 
+                    GroupId = groupId, 
+                    UserCount = userCount,
+                    Message = $"Group has {userCount} user(s)"
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return NotFound("Group not found");
+            }
+        }
+
         [HttpPost("UpdateGroup/{GroupId}")]
         public async Task<IActionResult> UpdateGroup(Guid GroupId, [FromBody] GroupEntity group)
         {

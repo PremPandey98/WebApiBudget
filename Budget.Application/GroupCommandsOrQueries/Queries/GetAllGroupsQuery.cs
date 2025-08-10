@@ -13,4 +13,23 @@ namespace WebApiBudget.Application.GroupCommandsOrQueries.Queries
             return await groupRepository.GetAllGroupsAsync();
         }
     }
+
+    public class GetGroupUserCountQuery(Guid GroupId) : IRequest<int>
+    {
+        public Guid GroupId { get; } = GroupId;
+    }
+
+    public class GetGroupUserCountQueryHandler(IGroupRepository groupRepository) : IRequestHandler<GetGroupUserCountQuery, int>
+    {
+        public async Task<int> Handle(GetGroupUserCountQuery request, CancellationToken cancellationToken)
+        {
+            if (request.GroupId == Guid.Empty)
+            {
+                throw new ArgumentException("Group ID cannot be empty", nameof(request.GroupId));
+            }
+            
+            var group = await groupRepository.GetGroupByIdOrGroupCodeAsync(request.GroupId, null);
+            return group?.Users?.Count ?? 0;
+        }
+    }
 }

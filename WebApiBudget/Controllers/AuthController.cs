@@ -162,6 +162,33 @@ namespace WebApiBudget.Controllers
             else
                 return BadRequest(new { Success = false, Message = "Invalid or expired OTP code" });
         }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (string.IsNullOrEmpty(request.CurrentPassword) || string.IsNullOrEmpty(request.NewPassword))
+                return BadRequest("Current password and new password are required");
+
+            if (request.CurrentPassword == request.NewPassword)
+                return BadRequest("New password must be different from current password");
+
+            if (request.NewPassword.Length < 6)
+                return BadRequest("New password must be at least 6 characters long");
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _mediator.Send(new ChangePasswordCommand(parsedUserId, request.CurrentPassword, request.NewPassword));
+            
+            if (result)
+                return Ok(new { Success = true, Message = "Password changed successfully" });
+            else
+                return BadRequest(new { Success = false, Message = "Current password is incorrect" });
+        }
     }
 
     public class EmailRequest
@@ -179,6 +206,12 @@ namespace WebApiBudget.Controllers
     {
         public string Email { get; set; } = null!;
         public string OtpCode { get; set; } = null!;
+        public string NewPassword { get; set; } = null!;
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string CurrentPassword { get; set; } = null!;
         public string NewPassword { get; set; } = null!;
     }
 }

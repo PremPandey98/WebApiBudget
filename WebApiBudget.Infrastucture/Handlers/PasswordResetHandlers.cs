@@ -128,4 +128,55 @@ namespace WebApiBudget.Infrastucture.Handlers
             }
         }
     }
+
+    public class ChangePasswordHandler : IRequestHandler<ChangePasswordCommand, bool>
+    {
+        private readonly AppDbContext _context;
+        private readonly ILogger<ChangePasswordHandler> _logger;
+
+        public ChangePasswordHandler(AppDbContext context, ILogger<ChangePasswordHandler> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        public async Task<bool> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Processing password change for user {UserId}", request.UserId);
+
+                // Get the user
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.UserId == request.UserId && u.IsActive, cancellationToken);
+                
+                if (user == null) 
+                {
+                    _logger.LogWarning("User with ID {UserId} not found during password change", request.UserId);
+                    return false;
+                }
+
+                // Verify current password
+                if (user.Password != request.CurrentPassword)
+                {
+                    _logger.LogWarning("Invalid current password provided for user {UserId}", request.UserId);
+                    return false;
+                }
+
+                // Update to new password
+                user.Password = request.NewPassword;
+                user.UpdatedAt = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync(cancellationToken);
+                
+                _logger.LogInformation("Password changed successfully for user {UserId}", request.UserId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password for user {UserId}: {Message}", request.UserId, ex.Message);
+                return false;
+            }
+        }
+    }
 }
